@@ -22,23 +22,25 @@ sed -i '$ i\echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6' /etc/rc.d/rc.loca
 # install wget and curl
 yum -y install wget curl
 
+
 # setting repo
-wget http://script.fawzya.net/centos/app/epel-release-6-8.noarch.rpm
-wget http://script.fawzya.net/centos/app/remi-release-6.rpm
+wget http://dl.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
 rpm -Uvh epel-release-6-8.noarch.rpm
 rpm -Uvh remi-release-6.rpm
 
 if [ "$OS" == "x86_64" ]; then
-  wget http://script.fawzya.net/centos/app/rpmforge.rpm
+  wget https://insomnet4u.me/23mei/app/rpmforge.rpm
   rpm -Uvh rpmforge.rpm
 else
-  wget http://script.fawzya.net/centos/app/rpmforge.rpm
+  wget https://insomnet4u.me/23mei/app/rpmforge.rpm
   rpm -Uvh rpmforge.rpm
 fi
 
 sed -i 's/enabled = 1/enabled = 0/g' /etc/yum.repos.d/rpmforge.repo
 sed -i -e "/^\[remi\]/,/^\[.*\]/ s|^\(enabled[ \t]*=[ \t]*0\\)|enabled=1|" /etc/yum.repos.d/remi.repo
 rm -f *.rpm
+
 
 # remove unused
 yum -y remove sendmail;
@@ -49,11 +51,18 @@ yum -y remove cyrus-sasl
 yum -y update
 
 # install webserver
-yum -y install nginx php-fpm php-cli
-service nginx restart
+cd
+wget -O /etc/nginx/nginx.conf "https://insomnet4u.me/23mei/conf/nginx.conf"
+sed -i 's/www-data/nginx/g' /etc/nginx/nginx.conf
+mkdir -p /home/vps/public_html
+echo "<pre>Setup by M NUR ASRIN</pre>" > /home/vps/public_html/index.html
+echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
+rm /etc/nginx/conf.d/*
+wget -O /etc/nginx/conf.d/vps.conf "https://insomnet4u.me/23mei/conf/vps.conf"
+sed -i 's/apache/nginx/g' /etc/php-fpm.d/www.conf
+chmod -R +rx /home/vps
 service php-fpm restart
-chkconfig nginx on
-chkconfig php-fpm on
+service nginx restart
 
 # install essential package
 yum -y install rrdtool screen iftop htop nmap bc nethogs openvpn vnstat ngrep mtr git zsh mrtg unrar rsyslog rkhunter mrtg net-snmp net-snmp-utils expect nano bind-utils
@@ -75,7 +84,7 @@ chkconfig vnstat on
 
 # install screenfetch
 cd
-wget http://script.fawzya.net/centos/screenfetch-dev
+wget https://insomnet4u.me/23mei/app/screenfetch-dev
 mv screenfetch-dev /usr/bin/screenfetch
 chmod +x /usr/bin/screenfetch
 echo "clear" >> .bash_profile
@@ -83,13 +92,13 @@ echo "screenfetch" >> .bash_profile
 
 # install webserver
 cd
-wget -O /etc/nginx/nginx.conf "http://script.fawzya.net/centos/conf/nginx.conf"
+wget -O /etc/nginx/nginx.conf "https://insomnet4u.me/23mei/conf/nginx.conf"
 sed -i 's/www-data/nginx/g' /etc/nginx/nginx.conf
 mkdir -p /home/vps/public_html
-echo "<pre>Setup by Fawzya.Net</pre>" > /home/vps/public_html/index.html
+echo "<pre>Setup by M NUR ASRIN</pre>" > /home/vps/public_html/index.html
 echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
 rm /etc/nginx/conf.d/*
-wget -O /etc/nginx/conf.d/vps.conf "http://script.fawzya.net/centos/conf/vps.conf"
+wget -O /etc/nginx/conf.d/vps.conf "https://insomnet4u.me/23mei/conf/vps.conf"
 sed -i 's/apache/nginx/g' /etc/php-fpm.d/www.conf
 chmod -R +rx /home/vps
 service php-fpm restart
@@ -123,8 +132,8 @@ wget -O /etc/openvpn/1194-client.ovpn "http://script.fawzya.net/centos/open-vpn.
 sed -i $MYIP2 /etc/openvpn/1194-client.ovpn;
 PASS=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1`;
 useradd -M -s /bin/false Fawzya
-echo "Fawzya:$PASS" | chpasswd
-echo "Fawzya" > pass.txt
+echo "OrangSabahan:$PASS" | chpasswd
+echo "OrangSabahan" > pass.txt
 echo "$PASS" >> pass.txt
 tar cf client.tar 1194-client.ovpn pass.txt
 cp client.tar /home/vps/public_html/
@@ -132,9 +141,10 @@ cp 1194-client.ovpn /home/vps/public_html/
 cd
 
 # install badvpn
-wget -O /usr/bin/badvpn-udpgw "http://script.fawzya.net/centos/conf/badvpn-udpgw"
+cd
+wget -O /usr/bin/badvpn-udpgw "https://insomnet4u.me/23mei/conf/badvpn-udpgw"
 if [ "$OS" == "x86_64" ]; then
-  wget -O /usr/bin/badvpn-udpgw "http://script.fawzya.net/centos/conf/badvpn-udpgw64"
+  wget -O /usr/bin/badvpn-udpgw "https://insomnet4u.me/23mei/conf/badvpn-udpgw64"
 fi
 sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.local
 sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.d/rc.local
@@ -210,11 +220,18 @@ chkconfig webmin on
 
 # pasang bmon
 if [ "$OS" == "x86_64" ]; then
-  wget -O /usr/bin/bmon "http://script.fawzya.net/centos/conf/bmon64"
+  wget -O /usr/bin/bmon "https://insomnet4u.me/23mei/conf/bmon64"
 else
-  wget -O /usr/bin/bmon "http://script.fawzya.net/centos/conf/bmon"
+  wget -O /usr/bin/bmon "https://insomnet4u.me/23mei/conf/bmon"
 fi
 chmod +x /usr/bin/bmon
+
+# auto kill multi login
+#echo "while :" >> /usr/bin/autokill
+#echo "  do" >> /usr/bin/autokill
+#echo "  userlimit $llimit" >> /usr/bin/autokill
+#echo "  sleep 20" >> /usr/bin/autokill
+#echo "  done" >> /usr/bin/autokill
 
 # block abuse
 cd
@@ -225,11 +242,9 @@ bash block-abuse.sh
 # downlaod script
 cd /usr/local/bin
 
-wget -O premium-script.tar "http://autoscriptnobita.tk/MASTER7752/raww/master/masterscript/premium-script.tar.gz"
-
-tar -xvf premium-script.tar
-
-rm -f premium-script.tar
+wget -O allcode.tar.gz "https://raw.githubusercontent.com/aliya02/rania/master/allcode.tar.gz" 
+tar -xvf allcode.tar.gz
+rm -f allcode.tar.gz
 
 
 cp /usr/local/bin/premium-script /usr/local/bin/menu
@@ -336,7 +351,7 @@ echo "0 */12 * * * root /usr/bin/userexpire" > /etc/cron.d/user-expire
 echo "0 0 * * * root /usr/bin/reboot" > /etc/cron.d/reboot
 
 # set time GMT +7
-ln -fs /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+ln -fs /usr/share/zoneinfo/Asia/Malaysia /etc/localtime
 
 # finalisasi
 chown -R nginx:nginx /home/vps/public_html
@@ -368,7 +383,7 @@ echo "badvpn   : badvpn-udpgw port 7300"  | tee -a log-install.txt
 echo "Webmin   : http://$MYIP:10000/"  | tee -a log-install.txt
 echo "vnstat   : http://$MYIP/vnstat/"  | tee -a log-install.txt
 echo "MRTG     : http://$MYIP/mrtg/"  | tee -a log-install.txt
-echo "Timezone : Asia/Jakarta"  | tee -a log-install.txt
+echo "Timezone : Asia/malaysia"  | tee -a log-install.txt
 echo "Fail2Ban : [on]"  | tee -a log-install.txt
 echo "IPv6     : [off]"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
@@ -388,4 +403,4 @@ echo ""  | tee -a log-install.txt
 echo "==============================================="  | tee -a log-install.txt
 
 rm kvm-install.sh
-reboot
+
